@@ -254,7 +254,10 @@ public class DesktopIniManager
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Failed to get console session user via WMI");
+        }
         
         return string.Empty;
     }

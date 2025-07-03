@@ -12,7 +12,7 @@ class Program
     private static MigrationConfig? _config;
     private static MigrationResult _result = new();
 
-    static int Main(string[] args)
+    static int Main(string[] _)
     {
         Console.OutputEncoding = Encoding.UTF8;
         

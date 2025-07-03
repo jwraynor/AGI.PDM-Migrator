@@ -12,9 +12,8 @@ public class ConfigManager
 
     public ConfigManager(string configPath = "config.json")
     {
-        // First try current directory, then app directory
+        // First try current directory
         var currentDirPath = Path.Combine(Directory.GetCurrentDirectory(), configPath);
-        var appDirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath);
         
         if (File.Exists(currentDirPath))
         {

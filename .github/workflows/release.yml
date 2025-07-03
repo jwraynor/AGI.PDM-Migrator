@@ -22,55 +22,107 @@ jobs:
         cd AGI-PDM
         dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
     
-    - name: Package
+    - name: Package Release
       shell: pwsh
       run: |
+        # Create release directory structure
         New-Item -ItemType Directory -Path release -Force
+        
+        # Copy ONLY the executable
         Copy-Item "AGI-PDM\bin\Release\net8.0\win-x64\publish\AGI-PDM.exe" "release\"
-        Copy-Item "AGI-PDM\config.json" "release\"
-        Copy-Item "README.md" "release\"
-        Copy-Item "scripts\Install-AGIPDMMigrator.ps1" "release\"
         
-        # Copy docs
-        New-Item -ItemType Directory -Path "release\docs" -Force
-        Copy-Item "docs\*" "release\docs\" -Recurse
+        # Create a sample config.json (users will modify this)
+        Copy-Item "AGI-PDM\config.json" "release\config.sample.json"
         
-        # Get version from tag
-        $version = "${{ github.ref_name }}"
-        $zipName = "AGI-PDM-Migrator-$version.zip"
+        # Create a minimal README for the release
+        @"
+        AGI PDM Migrator ${{ github.ref_name }}
+        =====================================
         
+        Quick Start
+        -----------
+        1. Copy config.sample.json to config.json
+        2. Edit config.json with your server details
+        3. Run AGI-PDM.exe as Administrator
+        
+        For automated deployment, download the bootstrap script from:
+        https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/scripts/Install-AGIPDMMigrator.ps1
+        
+        Documentation
+        -------------
+        Full documentation available at:
+        https://github.com/jwraynor/AGI.PDM-Migrator/tree/main/docs
+        
+        Requirements
+        ------------
+        - Windows 10/11 or Windows Server 2016+
+        - .NET 8.0 Runtime
+        - SolidWorks PDM Client installed
+        - Administrator privileges
+        "@ | Out-File -FilePath "release\README.txt" -Encoding UTF8
+        
+        # Create the zip file
+        $zipName = "AGI-PDM-Migrator-${{ github.ref_name }}.zip"
         Compress-Archive -Path "release\*" -DestinationPath $zipName
         
-        # Set output for next step
-        echo "RELEASE_FILE=$zipName" >> $env:GITHUB_OUTPUT
-        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        # Also create a standalone exe download
+        Copy-Item "AGI-PDM\bin\Release\net8.0\win-x64\publish\AGI-PDM.exe" "AGI-PDM-${{ github.ref_name }}.exe"
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: AGI-PDM-Migrator-${{ github.ref_name }}.zip
+        files: |
+          AGI-PDM-Migrator-${{ github.ref_name }}.zip
+          AGI-PDM-${{ github.ref_name }}.exe
         name: AGI PDM Migrator ${{ github.ref_name }}
         body: |
           ## AGI PDM Migrator ${{ github.ref_name }}
           
-          ### Installation
+          ### Downloads
           
-          Download `AGI-PDM-Migrator-${{ github.ref_name }}.zip` and extract to a folder.
+          - **AGI-PDM-Migrator-${{ github.ref_name }}.zip** - Full package with sample config
+          - **AGI-PDM-${{ github.ref_name }}.exe** - Standalone executable only
           
-          ### Quick Start
+          ### Automated Deployment (Recommended)
           
-          For RMM deployment, use the bootstrap script:
+          Use the bootstrap script to automatically download and run:
           ```powershell
+          # Download bootstrap script
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/scripts/Install-AGIPDMMigrator.ps1" -OutFile "Install-AGIPDMMigrator.ps1"
+          
+          # Run it
           .\Install-AGIPDMMigrator.ps1
           ```
           
+          ### Manual Installation
+          
+          1. Download `AGI-PDM-Migrator-${{ github.ref_name }}.zip`
+          2. Extract to a folder
+          3. Copy `config.sample.json` to `config.json`
+          4. Edit `config.json` with your server details
+          5. Run `AGI-PDM.exe` as Administrator
+          
           ### Requirements
+          
           - Windows 10/11 or Windows Server 2016+
-          - .NET 8.0 Runtime
+          - [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)
           - SolidWorks PDM Client installed
           - Administrator privileges
           
-          See the [documentation](https://github.com/jwraynor/AGI.PDM-Migrator/tree/main/docs) for detailed usage instructions.
+          ### Documentation
+          
+          - [Configuration Guide](https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/Configuration.md)
+          - [Usage Guide](https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/Usage.md)
+          - [Release Process](https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/Release-Process.md)
+          
+          ### What's New
+          
+          Initial release with:
+          - Automated PDM vault migration
+          - Autonomous mode for RMM deployment
+          - Pre-flight checks
+          - Registry backup
+          - Detailed logging
         draft: false
         prerelease: false
       env:

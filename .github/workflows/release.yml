@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: Build
+      run: |
+        cd AGI-PDM
+        dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+    
+    - name: Package
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Path release -Force
+        Copy-Item "AGI-PDM\bin\Release\net8.0\win-x64\publish\AGI-PDM.exe" "release\"
+        Copy-Item "AGI-PDM\config.json" "release\"
+        Copy-Item "README.md" "release\"
+        Copy-Item "scripts\Install-AGIPDMMigrator.ps1" "release\"
+        
+        # Copy docs
+        New-Item -ItemType Directory -Path "release\docs" -Force
+        Copy-Item "docs\*" "release\docs\" -Recurse
+        
+        # Get version from tag
+        $version = "${{ github.ref_name }}"
+        $zipName = "AGI-PDM-Migrator-$version.zip"
+        
+        Compress-Archive -Path "release\*" -DestinationPath $zipName
+        
+        # Set output for next step
+        echo "RELEASE_FILE=$zipName" >> $env:GITHUB_OUTPUT
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: AGI-PDM-Migrator-${{ github.ref_name }}.zip
+        name: AGI PDM Migrator ${{ github.ref_name }}
+        body: |
+          ## AGI PDM Migrator ${{ github.ref_name }}
+          
+          ### Installation
+          
+          Download `AGI-PDM-Migrator-${{ github.ref_name }}.zip` and extract to a folder.
+          
+          ### Quick Start
+          
+          For RMM deployment, use the bootstrap script:
+          ```powershell
+          .\Install-AGIPDMMigrator.ps1
+          ```
+          
+          ### Requirements
+          - Windows 10/11 or Windows Server 2016+
+          - .NET 8.0 Runtime
+          - SolidWorks PDM Client installed
+          - Administrator privileges
+          
+          See the [documentation](https://github.com/jwraynor/AGI.PDM-Migrator/tree/main/docs) for detailed usage instructions.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

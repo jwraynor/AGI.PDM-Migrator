@@ -87,10 +87,11 @@ public class ConfigManager
         if (string.IsNullOrWhiteSpace(config.RegistryKeys.Wow64))
             errors.Add("WOW64 registry key path is required");
 
-        // View Setup path validation
+        // View Setup path validation - only warn, don't fail
+        // PDM detection will handle this more gracefully
         if (!File.Exists(config.Settings.ViewSetupPath))
         {
-            errors.Add($"View Setup not found at: {config.Settings.ViewSetupPath}");
+            Log.Warning("View Setup not found at configured path: {ViewSetupPath}", config.Settings.ViewSetupPath);
         }
 
         // Create log directory if it doesn't exist

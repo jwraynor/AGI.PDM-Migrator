@@ -10,6 +10,7 @@ public class PdmDetector
         public bool IsInstalled { get; set; }
         public string? InstallPath { get; set; }
         public string? Version { get; set; }
+        public string? ViewSetupPath { get; set; }
         public List<string> DetectedLocations { get; set; } = new();
     }
 
@@ -112,6 +113,10 @@ public class PdmDetector
                         if (File.Exists(exePath))
                         {
                             info.DetectedLocations.Add($"Executable: {exePath}");
+                            if (exe == "ViewSetup.exe" && info.ViewSetupPath == null)
+                            {
+                                info.ViewSetupPath = exePath;
+                            }
                         }
                     }
                 }

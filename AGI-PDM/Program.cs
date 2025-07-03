@@ -46,11 +46,19 @@ class Program
             if (!pdmInfo.IsInstalled)
             {
                 Log.Information("SolidWorks PDM not detected - exiting gracefully");
-                ConsoleUI.ShowExitMessage(1);
-                return 1;
+                ConsoleUI.ShowExitMessage(0, "PDM installation check complete");
+                return 0;  // Return 0 as this is not an error, just a requirement check
             }
             
             ConsoleUI.DisplayProgress("Checking for SolidWorks PDM installation", true);
+            
+            // If PDM detector found ViewSetup.exe, update the config
+            if (!string.IsNullOrEmpty(pdmInfo.ViewSetupPath) && pdmInfo.ViewSetupPath != _config.Settings.ViewSetupPath)
+            {
+                Log.Information("Updating ViewSetup path from PDM detection: {Path}", pdmInfo.ViewSetupPath);
+                _config.Settings.ViewSetupPath = pdmInfo.ViewSetupPath;
+            }
+            
             Console.WriteLine();
             
             // Display migration information

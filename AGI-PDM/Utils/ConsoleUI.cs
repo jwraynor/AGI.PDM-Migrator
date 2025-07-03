@@ -11,15 +11,15 @@ public static class ConsoleUI
     {
         // ASCII art logo - plain text for stdout
         Console.WriteLine();
-        Console.WriteLine(@"     ___   ________   ____     ____  ____  __  ___");
-        Console.WriteLine(@"    / _ | / ___/  |/  _/    / __ \/ __ \/  |/  /");
-        Console.WriteLine(@"   / __ |/ (_ // /  _/     / /_/ / / / / /|_/ / ");
-        Console.WriteLine(@"  /_/ |_|\___/___/___/    / .___/_/ /_/_/  /_/  ");
-        Console.WriteLine(@"                         /_/                     ");
+        Console.WriteLine(@"       ___   _____ _____   _____  _____  __  __");
+        Console.WriteLine(@"      / _ \ / ____|_   _| |  __ \|  __ \|  \/  |");
+        Console.WriteLine(@"     / /_\ \ |  __  | |   | |__) | |  | | \  / |");
+        Console.WriteLine(@"    / _____ \ | |_ | | |   |  ___/| |  | | |\/| |");
+        Console.WriteLine(@"   /_/     \_\____| |_|   |_|    |____/ |_|  |_|");
         Console.WriteLine();
         
-        CenterText("AGI PDM Server Migration Tool");
-        CenterText("Version 1.0.0");
+        CenterText("Server Migration Tool");
+        CenterText("Version 1.0.2");
         Console.WriteLine();
         
         DrawLine('═');
@@ -137,24 +137,39 @@ public static class ConsoleUI
         }
         else
         {
+            Console.WriteLine();
             DisplayBox(
-                "SolidWorks PDM is not installed on this system.\n" +
+                "SOLIDWORKS PDM NOT DETECTED\n" +
                 "\n" +
-                "This tool requires SolidWorks PDM Professional or Standard\n" +
-                "to be installed before running the migration.\n" +
+                "This migration tool requires SolidWorks PDM Professional\n" +
+                "or Standard to be installed on this system.\n" +
                 "\n" +
-                "Please install SolidWorks PDM and try again."
+                "The tool could not find:\n" +
+                "  - PDM registry entries\n" +
+                "  - PDM installation directory\n" +
+                "  - ViewSetup.exe executable\n" +
+                "\n" +
+                "Please ensure SolidWorks PDM is installed before\n" +
+                "running this migration tool.\n" +
+                "\n" +
+                "For more information, contact your IT administrator." +
+                "\t .... if you are the IT administrator, please contact James :D"
             );
+            Console.WriteLine();
         }
     }
 
-    public static void ShowExitMessage(int exitCode = 0)
+    public static void ShowExitMessage(int exitCode = 0, string? customMessage = null)
     {
         Console.WriteLine();
         DrawLine('═');
         Console.WriteLine();
         
-        if (exitCode == 0)
+        if (customMessage != null)
+        {
+            CenterText(customMessage);
+        }
+        else if (exitCode == 0)
         {
             CenterText("*** Migration completed successfully ***");
         }

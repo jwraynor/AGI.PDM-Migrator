@@ -11,9 +11,9 @@ if %errorLevel% == 0 (
     echo Running with Administrator privileges...
     cd /d "%~dp0"
     AGI-PDM\bin\Release\net8.0-windows\AGI-PDM.exe
+    exit /b %errorlevel%
 ) else (
     echo Requesting Administrator privileges...
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b 1
 )
-
-pause

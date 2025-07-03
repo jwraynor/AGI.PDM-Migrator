@@ -54,8 +54,7 @@ class Program
         {
             Log.Fatal(ex, "Fatal error during migration");
             Console.WriteLine($"\nFATAL ERROR: {ex.Message}");
-            Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
+            // Autonomous mode - no user input
             return -1;
         }
         finally
@@ -74,12 +73,9 @@ class Program
                 return false;
             }
 
-            // Confirm before proceeding with destructive operations
-            if (!GetUserConfirmation())
-            {
-                Log.Information("Migration cancelled by user");
-                return false;
-            }
+            // Autonomous mode - proceed without confirmation
+            Log.Information("Running in autonomous mode - proceeding without user confirmation");
+            LogMigrationDetails();
 
             // Step 2: Update desktop.ini
             if (!UpdateDesktopIni())
@@ -142,40 +138,34 @@ class Program
         }
     }
 
-    static bool GetUserConfirmation()
+    static void LogMigrationDetails()
     {
-        Console.WriteLine("\n===========================================");
-        Console.WriteLine("MIGRATION CONFIRMATION");
-        Console.WriteLine("===========================================");
-        Console.WriteLine($"Old Server: {_config!.Migration.OldServer}");
-        Console.WriteLine($"New Server: {_config.Migration.NewServer}");
-        Console.WriteLine($"Vault: {_config.Migration.VaultName}");
-        Console.WriteLine($"Path: {_config.Migration.VaultPath}");
+        Log.Information("===========================================");
+        Log.Information("MIGRATION DETAILS");
+        Log.Information("===========================================");
+        Log.Information("Old Server: {OldServer}", _config!.Migration.OldServer);
+        Log.Information("New Server: {NewServer}", _config.Migration.NewServer);
+        Log.Information("Vault: {VaultName}", _config.Migration.VaultName);
+        Log.Information("Path: {VaultPath}", _config.Migration.VaultPath);
         
         // Show current vault state
         if (Directory.Exists(_config.Migration.VaultPath))
         {
             var hasDesktopIni = File.Exists(Path.Combine(_config.Migration.VaultPath, "desktop.ini"));
-            Console.WriteLine($"\nVault Status: Directory exists (desktop.ini: {(hasDesktopIni ? "present" : "missing")})");
+            Log.Information("Vault Status: Directory exists (desktop.ini: {HasDesktopIni})", hasDesktopIni ? "present" : "missing");
         }
         else
         {
-            Console.WriteLine("\nVault Status: Directory not found (may be already deleted)");
+            Log.Information("Vault Status: Directory not found (may be already deleted)");
         }
         
-        Console.WriteLine("\nThis process will:");
-        Console.WriteLine("- Modify desktop.ini file (if present)");
-        Console.WriteLine("- Delete registry entries for the old vault");
-        Console.WriteLine("- Delete the existing vault view");
-        Console.WriteLine("- Launch View Setup for new server connection");
-        Console.WriteLine("\nNOTE: The tool will skip steps that are not needed");
-        Console.WriteLine("WARNING: This operation cannot be easily undone!");
-        Console.WriteLine("\nDo you want to continue? (Y/N): ");
-
-        var response = Console.ReadKey();
-        Console.WriteLine();
-
-        return response.Key == ConsoleKey.Y;
+        Log.Information("This process will:");
+        Log.Information("- Modify desktop.ini file (if present)");
+        Log.Information("- Delete registry entries for the old vault");
+        Log.Information("- Delete the existing vault view");
+        Log.Information("- Launch View Setup for new server connection");
+        Log.Information("NOTE: The tool will skip steps that are not needed");
+        Log.Information("WARNING: This operation cannot be easily undone!");
     }
 
     static bool UpdateDesktopIni()
@@ -282,25 +272,10 @@ class Program
                 Console.WriteLine("2. Navigate to the vault view settings");
                 Console.WriteLine("3. Delete the vault view from there");
                 Console.WriteLine();
-                Console.WriteLine("After manual deletion, continue? (Y/N): ");
-                
-                var response = Console.ReadKey();
-                Console.WriteLine();
-                
-                if (response.Key == ConsoleKey.Y)
-                {
-                    // Check if it was manually deleted
-                    if (!Directory.Exists(_config.Migration.VaultPath))
-                    {
-                        Log.Information("Vault manually deleted successfully");
-                        success = true;
-                    }
-                    else
-                    {
-                        Log.Warning("Vault still exists, continuing anyway");
-                        success = true; // Allow continuation
-                    }
-                }
+                // In autonomous mode, we cannot wait for manual intervention
+                Log.Error("Automated vault deletion failed. Manual intervention required.");
+                Log.Error("The migration cannot continue in autonomous mode.");
+                success = false;
             }
 
             _result.VaultViewDeletion.Complete(success,
@@ -356,16 +331,8 @@ class Program
     {
         Log.Error("{StepName} failed", stepName);
         
-        Console.WriteLine($"\n{stepName} failed. Do you want to continue anyway? (Y/N): ");
-        var response = Console.ReadKey();
-        Console.WriteLine();
-
-        if (response.Key == ConsoleKey.Y)
-        {
-            Log.Warning("User chose to continue despite {StepName} failure", stepName);
-            return true;
-        }
-
+        // In autonomous mode, we stop on failures
+        Log.Error("Stopping migration due to step failure in autonomous mode");
         return false;
     }
 
@@ -411,8 +378,8 @@ class Program
             Console.WriteLine("3. Users will authenticate with their own credentials");
         }
 
-        Console.WriteLine("\nPress any key to exit...");
-        Console.ReadKey();
+        // Autonomous mode - no user input
+        Log.Information("Migration completed - exiting");
     }
 
     static void ReportStepStatus(string stepName, MigrationStepResult step)

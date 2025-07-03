@@ -1,5 +1,8 @@
 # AGI PDM Server Migration Tool
 
+[![Release](https://img.shields.io/github/v/release/jwraynor/AGI.PDM-Migrator)](https://github.com/jwraynor/AGI.PDM-Migrator/releases)
+[![License](https://img.shields.io/badge/license-Proprietary-red)](LICENSE)
+
 This tool automates the process of migrating SolidWorks PDM vault connections from one server to another (specifically from AGISW2 to Agi-PDM).
 
 ## Overview
@@ -61,10 +64,10 @@ For RMM deployment or automated installation, use the bootstrap script:
 
 ```powershell
 # Download and run in one command
-iwr -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/scripts.md" | % { $s=$_.Content; $i=$s.IndexOf('```powershell')+13; $e=$s.IndexOf('```',$i); iex $s.Substring($i,$e-$i) }
+iwr -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/Scripts.md" | % { $s=$_.Content; $i=$s.IndexOf('```powershell')+13; $e=$s.IndexOf('```',$i); iex $s.Substring($i,$e-$i) }
 ```
 
-See [scripts documentation](docs/scripts.md) for the full bootstrap script and detailed usage instructions.
+See [scripts documentation](docs/Scripts.md) for the full bootstrap script and detailed usage instructions.
 
 ### Manual Execution
 
@@ -74,17 +77,23 @@ See [scripts documentation](docs/scripts.md) for the full bootstrap script and d
    ```
    AGI-PDM.exe
    ```
-4. Follow the on-screen prompts
+4. Monitor the progress indicators
 5. When View Setup launches, follow the manual steps to complete the connection
 
 ## Features
 
+### Latest Features (v1.0.2)
+- **Enhanced Console Interface**: Clean ASCII art header with visual progress indicators
+- **PDM Detection**: Friendly check for SolidWorks PDM installation before running
+- **Web UI Compatible**: Output designed for RMM consoles and web interfaces
+- **Autonomous Mode**: Fully automated with no user interaction required
+
 ### Safety Features
 - Pre-flight checks verify system state before making changes
-- User confirmation required before destructive operations
+- Automatic PDM installation detection with graceful exit
 - Registry key backup before deletion
 - Comprehensive logging for troubleshooting
-- Option to continue despite individual step failures
+- Clear status reporting for all operations
 
 ### Automation
 - Automatic detection of actual logged-in user (even when running as admin)
@@ -118,10 +127,10 @@ See [scripts documentation](docs/scripts.md) for the full bootstrap script and d
 - Handles various error conditions gracefully
 - Skips non-critical steps when files are missing (e.g., desktop.ini)
 - Continues migration even with partially deleted vaults
-- Provides detailed error messages
+- Provides detailed error messages with visual indicators
 - Creates instruction files for manual completion if needed
 - Comprehensive logging to troubleshoot issues
-- Clear status reporting showing skipped vs failed steps
+- Clear status reporting showing [OK], [SKIP], [FAIL] for each step
 
 ## Logging
 

@@ -72,7 +72,7 @@ finally {
 
 ```powershell
 # Download the script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/scripts.md" -OutFile "Install-AGIPDMMigrator.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/Scripts.md" -OutFile "Install-AGIPDMMigrator.ps1"
 
 # Extract just the PowerShell code from the markdown
 $content = Get-Content "Install-AGIPDMMigrator.ps1" -Raw
@@ -91,7 +91,7 @@ For RMM deployment or quick execution:
 
 ```powershell
 # This downloads and executes the script in one command
-$scriptUrl = "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/scripts.md"
+$scriptUrl = "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/Scripts.md"
 $scriptContent = (Invoke-WebRequest -Uri $scriptUrl).Content
 $start = $scriptContent.IndexOf('```powershell') + 13
 $end = $scriptContent.IndexOf('```', $start)

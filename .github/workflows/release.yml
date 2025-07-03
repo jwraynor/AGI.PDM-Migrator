@@ -49,7 +49,7 @@ jobs:
         3. Run AGI-PDM.exe as Administrator
         
         For automated deployment, see the scripts documentation:
-        https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/scripts.md
+        https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/Scripts.md
         
         Documentation
         -------------
@@ -91,10 +91,10 @@ jobs:
           Use the bootstrap script to automatically download and run:
           ```powershell
           # One-liner for RMM deployment
-          iwr -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/scripts.md" | % { $s=$_.Content; $i=$s.IndexOf('```powershell')+13; $e=$s.IndexOf('```',$i); iex $s.Substring($i,$e-$i) }
+          iwr -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/Scripts.md" | % { $s=$_.Content; $i=$s.IndexOf('```powershell')+13; $e=$s.IndexOf('```',$i); iex $s.Substring($i,$e-$i) }
           ```
           
-          See full documentation at: https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/scripts.md
+          See full documentation at: https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/Scripts.md
           
           ### Manual Installation
           

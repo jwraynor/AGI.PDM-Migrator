@@ -16,34 +16,30 @@
 2. Extract to a folder (e.g., `C:\AGI-PDM-Migrator`)
 3. Configure `config.json` with your environment details
 
-### Option 2: Bootstrap Script
+### Option 2: Bootstrap Script (Recommended)
 
-Use the PowerShell bootstrap script to automatically download and run:
+Use the one-liner PowerShell command to automatically download and run:
 
 ```powershell
-# Download and run the bootstrap script
-.\Install-AGIPDMMigrator.ps1
+# Download and run in one command
+iwr -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/Scripts.md" | % { $s=$_.Content; $i=$s.IndexOf('```powershell')+13; $e=$s.IndexOf('```',$i); iex $s.Substring($i,$e-$i) }
 ```
 
 ## Running the Migration
 
-### Interactive Mode
+### Running the Application
 
-For manual execution with prompts:
+The tool runs in autonomous mode by default (no user interaction required):
 
 1. Open Command Prompt as Administrator
 2. Navigate to the installation folder
-3. Run: `AGI-PDM.exe`
+3. Ensure `config.json` is in the same directory
+4. Run: `AGI-PDM.exe`
 
-### Autonomous Mode (RMM)
-
-For unattended execution:
-
-1. Place `config.json` in the execution directory
-2. Run the scriptable version:
-   ```powershell
-   .\RunMigration-Scriptable.ps1
-   ```
+The tool will:
+- Detect if SolidWorks PDM is installed
+- Display progress for each migration step
+- Exit with appropriate error codes for RMM integration
 
 ### Exit Codes
 
@@ -124,22 +120,46 @@ For deployment via RMM tools:
 
 Example RMM script:
 ```powershell
-# Download migrator
-Invoke-WebRequest -Uri "https://github.com/jwraynor/AGI.PDM-Migrator/releases/latest/download/AGI-PDM-Migrator.zip" -OutFile "migrator.zip"
-Expand-Archive -Path "migrator.zip" -DestinationPath "C:\Temp\AGI-PDM"
+# Download and extract migrator
+$tempPath = "C:\Temp\AGI-PDM-$(Get-Random)"
+New-Item -ItemType Directory -Path $tempPath -Force
 
-# Create config
+# Get latest release
+$release = Invoke-RestMethod -Uri "https://api.github.com/repos/jwraynor/AGI.PDM-Migrator/releases/latest"
+$asset = $release.assets | Where-Object { $_.name -like "*AGI-PDM-Migrator*.zip" } | Select-Object -First 1
+
+# Download and extract
+Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "$tempPath\migrator.zip"
+Expand-Archive -Path "$tempPath\migrator.zip" -DestinationPath $tempPath -Force
+
+# Create config from environment variables or parameters
 $config = @{
     migration = @{
         oldServer = $env:OLD_SERVER
         newServer = $env:NEW_SERVER
-        # ... other settings
+        newServerPort = 3030
+        vaultName = "AGI PDM"
+        vaultPath = "C:\AGI PDM"
+        deleteLocalCache = $true
+    }
+    credentials = @{
+        pdmUser = $env:PDM_USER
+        pdmPassword = $env:PDM_PASSWORD
+        domain = "Agi-PDM (local account)"
+        useCurrentUserForVault = $true
+        vaultOwnerOverride = ""
     }
 }
-$config | ConvertTo-Json -Depth 10 | Set-Content "C:\Temp\AGI-PDM\config.json"
+$config | ConvertTo-Json -Depth 10 | Set-Content "$tempPath\config.json"
 
 # Run migration
-Set-Location "C:\Temp\AGI-PDM"
-$result = & .\RunMigration-Scriptable.ps1
-exit $LASTEXITCODE
+Set-Location $tempPath
+& .\AGI-PDM.exe
+$exitCode = $LASTEXITCODE
+
+# Cleanup
+Set-Location C:\
+Remove-Item $tempPath -Recurse -Force -ErrorAction SilentlyContinue
+
+exit $exitCode
 ```

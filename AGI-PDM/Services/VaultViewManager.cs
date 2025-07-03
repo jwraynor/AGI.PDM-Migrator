@@ -3,8 +3,6 @@ using System.Runtime.InteropServices;
 using Serilog;
 using Microsoft.Win32;
 using System.Text;
-using System.ComponentModel;
-using System.Security.Principal;
 
 namespace AGI_PDM.Services;
 
@@ -13,6 +11,11 @@ public class VaultViewManager
     private readonly string _vaultPath;
     private readonly string _vaultName;
     private readonly bool _deleteCache;
+    
+    // Timeout constants
+    private const int PROCESS_WAIT_TIMEOUT_MS = 10000; // 10 seconds
+    private const int INITIAL_BUFFER_SIZE = 0x10000; // 64KB
+    private const int BUFFER_INCREMENT_SIZE = 0x10000; // 64KB
 
     [DllImport("shell32.dll", CharSet = CharSet.Auto)]
     private static extern int SHFileOperation(ref SHFILEOPSTRUCT FileOp);
@@ -301,11 +304,11 @@ public class VaultViewManager
                 hwnd = IntPtr.Zero,
                 wFunc = FO_DELETE,
                 pFrom = _vaultPath + "\0\0", // Double null-terminated
-                pTo = null,
+                pTo = string.Empty,
                 fFlags = (short)(FOF_NOCONFIRMATION | FOF_SILENT | FOF_NOERRORUI),
                 fAnyOperationsAborted = false,
                 hNameMappings = IntPtr.Zero,
-                lpszProgressTitle = null
+                lpszProgressTitle = string.Empty
             };
 
             Log.Debug("Calling SHFileOperation for path: {Path}", _vaultPath);
@@ -1137,7 +1140,7 @@ Start-Sleep -Milliseconds 500
         try
         {
             // First, get the size needed for system handle information
-            int bufferSize = 0x10000; // Start with 64KB
+            int bufferSize = INITIAL_BUFFER_SIZE;
             IntPtr buffer = IntPtr.Zero;
             
             while (true)
@@ -1154,7 +1157,7 @@ Start-Sleep -Milliseconds 500
                     }
                     else if (status == -1073741820) // STATUS_INFO_LENGTH_MISMATCH (0xC0000004)
                     {
-                        bufferSize = returnLength + 0x10000;
+                        bufferSize = returnLength + BUFFER_INCREMENT_SIZE;
                         Marshal.FreeHGlobal(buffer);
                         continue;
                     }
@@ -1390,7 +1393,7 @@ Start-Sleep -Milliseconds 500
             if (process != null)
             {
                 var output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit(10000);
+                process.WaitForExit(PROCESS_WAIT_TIMEOUT_MS);
                 
                 // Parse handle.exe output
                 // Format: processname.exe pid: type handle: path
@@ -1752,7 +1755,7 @@ Start-Sleep -Milliseconds 500
             if (process != null)
             {
                 var output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit(10000);
+                process.WaitForExit(PROCESS_WAIT_TIMEOUT_MS);
                 
                 var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)

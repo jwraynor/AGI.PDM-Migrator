@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Serilog;
+using System.Reflection;
 using System.Text;
 
 namespace AGI_PDM.Configuration;
@@ -11,7 +12,18 @@ public class ConfigManager
 
     public ConfigManager(string configPath = "config.json")
     {
-        _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath);
+        // First try current directory
+        var currentDirPath = Path.Combine(Directory.GetCurrentDirectory(), configPath);
+        
+        if (File.Exists(currentDirPath))
+        {
+            _configPath = currentDirPath;
+            Log.Information("Using config from current directory: {ConfigPath}", _configPath);
+        }
+        else
+        {
+            _configPath = currentDirPath; // We'll extract default here if needed
+        }
     }
 
     public MigrationConfig LoadConfiguration()
@@ -20,7 +32,8 @@ public class ConfigManager
         {
             if (!File.Exists(_configPath))
             {
-                throw new FileNotFoundException($"Configuration file not found at: {_configPath}");
+                Log.Information("Config not found at {ConfigPath}, extracting default config", _configPath);
+                ExtractDefaultConfig();
             }
 
             var json = File.ReadAllText(_configPath);
@@ -120,5 +133,82 @@ public class ConfigManager
         // Simple base64 encoding for now - in production, use proper encryption
         var bytes = Encoding.UTF8.GetBytes(plainPassword);
         return Convert.ToBase64String(bytes);
+    }
+
+    private void ExtractDefaultConfig()
+    {
+        try
+        {
+            // Get the embedded default config
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "AGI_PDM.config.json";
+            
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream == null)
+            {
+                // If no embedded resource, create a minimal default
+                CreateMinimalDefaultConfig();
+                return;
+            }
+            
+            using var reader = new StreamReader(stream);
+            var defaultConfig = reader.ReadToEnd();
+            
+            // Write to current directory
+            File.WriteAllText(_configPath, defaultConfig);
+            Log.Information("Extracted default config to {ConfigPath}", _configPath);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to extract embedded config, creating minimal default");
+            CreateMinimalDefaultConfig();
+        }
+    }
+
+    private void CreateMinimalDefaultConfig()
+    {
+        var defaultConfig = new MigrationConfig
+        {
+            Migration = new MigrationSettings
+            {
+                OldServer = "AGISW2",
+                NewServer = "Agi-PDM",
+                NewServerPort = 3030,
+                VaultName = "AGI PDM",
+                VaultPath = "C:\\AGI PDM",
+                DeleteLocalCache = true
+            },
+            Credentials = new CredentialSettings
+            {
+                PdmUser = "PDM-user",
+                PdmPassword = "YourPasswordHere",
+                Domain = "Agi-PDM (local account)",
+                UseCurrentUserForVault = true,
+                VaultOwnerOverride = ""
+            },
+            RegistryKeys = new RegistryKeySettings
+            {
+                Primary = "HKEY_LOCAL_MACHINE\\Software\\SolidWorks\\Applications\\PDMWorks Enterprise\\Databases",
+                Wow64 = "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\SolidWorks\\Applications\\PDMWorks Enterprise\\Databases"
+            },
+            Settings = new AppSettings
+            {
+                VerifyCheckedIn = true,
+                BackupRegistry = true,
+                RequireAdminRights = true,
+                AutoRestartAsAdmin = true,
+                ViewSetupPath = "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS PDM\\ViewSetup.exe"
+            },
+            Logging = new LoggingSettings
+            {
+                LogPath = "C:\\ProgramData\\AGI-PDM-Migration\\Logs",
+                LogLevel = "Debug",
+                CreateDetailedLog = true
+            }
+        };
+        
+        var json = JsonConvert.SerializeObject(defaultConfig, Formatting.Indented);
+        File.WriteAllText(_configPath, json);
+        Log.Information("Created default config at {ConfigPath}", _configPath);
     }
 }

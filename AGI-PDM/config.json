@@ -1,0 +1,33 @@
+{
+  "migration": {
+    "oldServer": "AGISW2",
+    "newServer": "Agi-PDM",
+    "newServerPort": 3030,
+    "vaultName": "AGI PDM",
+    "vaultPath": "C:\\AGI PDM",
+    "deleteLocalCache": true
+  },
+  "credentials": {
+    "pdmUser": "PDM-user",
+    "pdmPassword": "YourPasswordHere",
+    "domain": "Agi-PDM (local account)",
+    "useCurrentUserForVault": true,
+    "vaultOwnerOverride": ""
+  },
+  "registryKeys": {
+    "primary": "HKEY_LOCAL_MACHINE\\Software\\SolidWorks\\Applications\\PDMWorks Enterprise\\Databases",
+    "wow64": "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\SolidWorks\\Applications\\PDMWorks Enterprise\\Databases"
+  },
+  "settings": {
+    "verifyCheckedIn": true,
+    "backupRegistry": true,
+    "requireAdminRights": true,
+    "autoRestartAsAdmin": true,
+    "viewSetupPath": "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS PDM\\ViewSetup.exe"
+  },
+  "logging": {
+    "logPath": "C:\\ProgramData\\AGI-PDM-Migration\\Logs",
+    "logLevel": "Debug",
+    "createDetailedLog": true
+  }
+}

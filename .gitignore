@@ -1,0 +1,97 @@
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Claude files
+.claude/
+claude_*.db
+
+# Build outputs
+build/
+dist/
+out/
+bin/
+obj/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Dependencies
+node_modules/
+packages/
+vendor/
+.pnp.*
+.yarn/*
+
+# Environment and config
+.env
+.env.local
+.env.*.local
+*.env
+config.local.*
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Cache
+.cache/
+*.cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# OS generated
+Thumbs.db
+desktop.ini
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Database
+*.sqlite
+*.db
+*.mdb
+
+# Coverage and test
+coverage/
+.coverage
+*.cover
+.hypothesis/
+.pytest_cache/
+htmlcov/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Secrets and keys
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+secrets/

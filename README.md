@@ -55,6 +55,19 @@ Edit the `config.json` file to match your environment:
 
 ## Usage
 
+### Automated Deployment (Recommended)
+
+For RMM deployment or automated installation, use the bootstrap script:
+
+```powershell
+# Download and run in one command
+iwr -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/scripts.md" | % { $s=$_.Content; $i=$s.IndexOf('```powershell')+13; $e=$s.IndexOf('```',$i); iex $s.Substring($i,$e-$i) }
+```
+
+See [scripts documentation](docs/scripts.md) for the full bootstrap script and detailed usage instructions.
+
+### Manual Execution
+
 1. Ensure all files are checked in to the vault
 2. Close all SolidWorks and PDM applications
 3. Run the application as Administrator:

@@ -24,9 +24,7 @@ This guide explains how to create GitHub releases for the AGI PDM Migrator.
    
    # Copy necessary files
    Copy-Item "bin/Release/net8.0/win-x64/publish/AGI-PDM.exe" "../release/"
-   Copy-Item "config.json" "../release/"
-   Copy-Item "../README.md" "../release/"
-   Copy-Item "../scripts/Install-AGIPDMMigrator.ps1" "../release/"
+   Copy-Item "config.json" "../release/config.sample.json"
    
    # Create zip archive
    Compress-Archive -Path "../release/*" -DestinationPath "../AGI-PDM-Migrator.zip" -Force
@@ -60,10 +58,7 @@ This guide explains how to create GitHub releases for the AGI PDM Migrator.
    
    ### Quick Start
    
-   For RMM deployment, use the bootstrap script:
-   ```powershell
-   .\Install-AGIPDMMigrator.ps1
-   ```
+   For RMM deployment, see the [scripts documentation](https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/scripts.md)
    
    ### Requirements
    - Windows 10/11 or Windows Server 2016+
@@ -88,44 +83,9 @@ gh release create v1.0.0 \
   AGI-PDM-Migrator.zip
 ```
 
-## Build Script
+## Automated Releases
 
-Create a `Build-Release.ps1` script for automated builds:
-
-```powershell
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$Version
-)
-
-$ErrorActionPreference = "Stop"
-
-Write-Host "Building AGI PDM Migrator v$Version..." -ForegroundColor Green
-
-# Clean previous builds
-Remove-Item -Path "AGI-PDM/bin" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "AGI-PDM/obj" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "release" -Recurse -Force -ErrorAction SilentlyContinue
-
-# Build
-Set-Location "AGI-PDM"
-dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
-Set-Location ".."
-
-# Create release package
-New-Item -ItemType Directory -Path "release" -Force | Out-Null
-Copy-Item "AGI-PDM/bin/Release/net8.0/win-x64/publish/AGI-PDM.exe" "release/"
-Copy-Item "AGI-PDM/config.json" "release/"
-Copy-Item "README.md" "release/"
-Copy-Item "scripts/Install-AGIPDMMigrator.ps1" "release/"
-
-# Create zip
-$zipName = "AGI-PDM-Migrator-v$Version.zip"
-Compress-Archive -Path "release/*" -DestinationPath $zipName -Force
-
-Write-Host "Release package created: $zipName" -ForegroundColor Green
-Write-Host "Ready to upload to GitHub releases!" -ForegroundColor Yellow
-```
+Releases are automatically created by GitHub Actions when you push a version tag (e.g., `v1.0.0`). The workflow handles all building and packaging. Manual builds are not required.
 
 ## Version Numbering
 
@@ -179,9 +139,7 @@ jobs:
       run: |
         mkdir release
         copy AGI-PDM\bin\Release\net8.0\win-x64\publish\AGI-PDM.exe release\
-        copy AGI-PDM\config.json release\
-        copy README.md release\
-        copy scripts\Install-AGIPDMMigrator.ps1 release\
+        copy AGI-PDM\config.json release\config.sample.json
         Compress-Archive -Path release\* -DestinationPath AGI-PDM-Migrator.zip
     
     - name: Create Release

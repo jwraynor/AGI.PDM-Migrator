@@ -48,8 +48,8 @@ jobs:
         2. Edit config.json with your server details
         3. Run AGI-PDM.exe as Administrator
         
-        For automated deployment, download the bootstrap script from:
-        https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/scripts/Install-AGIPDMMigrator.ps1
+        For automated deployment, see the scripts documentation:
+        https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/scripts.md
         
         Documentation
         -------------
@@ -90,12 +90,11 @@ jobs:
           
           Use the bootstrap script to automatically download and run:
           ```powershell
-          # Download bootstrap script
-          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/scripts/Install-AGIPDMMigrator.ps1" -OutFile "Install-AGIPDMMigrator.ps1"
-          
-          # Run it
-          .\Install-AGIPDMMigrator.ps1
+          # One-liner for RMM deployment
+          iwr -Uri "https://raw.githubusercontent.com/jwraynor/AGI.PDM-Migrator/main/docs/scripts.md" | % { $s=$_.Content; $i=$s.IndexOf('```powershell')+13; $e=$s.IndexOf('```',$i); iex $s.Substring($i,$e-$i) }
           ```
+          
+          See full documentation at: https://github.com/jwraynor/AGI.PDM-Migrator/blob/main/docs/scripts.md
           
           ### Manual Installation
           

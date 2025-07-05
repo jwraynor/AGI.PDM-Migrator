@@ -19,7 +19,7 @@
     "wow64": "HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\SolidWorks\\Applications\\PDMWorks Enterprise\\Databases"
   },
   "settings": {
-    "verifyCheckedIn": true,
+    "verifyCheckedIn": false,
     "backupRegistry": true,
     "requireAdminRights": true,
     "autoRestartAsAdmin": true,
